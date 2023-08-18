@@ -1,7 +1,7 @@
 import sys
 
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox
 from PyQt5.QtCore import QDate
 from PyQt5.uic import loadUi
 
@@ -59,7 +59,7 @@ class Prescricao(QMainWindow):
             self.dateEdit_4FimSusp.setEnabled(True)
             self.checkBoxInicSusp.setChecked(True)
         else:
-            self.dateEdit_4FimSusp.setEnabled(False)     
+            self.dateEdit_4FimSusp.setEnabled(False)   
  
     def calcula_prescricao(self):
         data_hoje = datetime.now()
@@ -107,43 +107,67 @@ class Prescricao(QMainWindow):
 
         # Verificação inicial
         if not (criterio_0 and criterio_1 and criterio_2 and criterio_3):
-             print("Verifique as datas!")
+             mensagem = "Verifique as datas!"
+             exibe_critico(self, mensagem)
         
         # Prescrição antes do recebimento da denúncia
         elif data_receb_den > data_prescricao:
-            print(f'#1 - A prescrição ocorreu em {data_prescricao.strftime("%d/%m/%Y")}!')
+            mensagem = f'A prescrição ocorreu em {data_prescricao.strftime("%d/%m/%Y")}!'
+            exibe_advertencia(self, mensagem)
 
         # Prescrição antes da suspensão
         elif data_inicio_susp > data_prescricao_apos_receb:
-            print(f'#2 - A prescrição ocorreu em {data_prescricao_apos_receb.strftime("%d/%m/%Y")}!')
-
+            mensagem = f'A prescrição ocorreu em {data_prescricao_apos_receb.strftime("%d/%m/%Y")}!'
+            exibe_advertencia(self, mensagem)
+            
         # Prescrição sem suspensão do processo
         elif (not check_inicio_susp) and (not check_fim_susp):
-            print(f'#3 - A prescrição ocorre em {data_prescricao_apos_receb.strftime("%d/%m/%Y")}!')
+            mensagem = f'A prescrição ocorre em {data_prescricao_apos_receb.strftime("%d/%m/%Y")}!'
+            exibe_advertencia(self, mensagem)
 
         # Prescrição com processo suspenso
         elif check_inicio_susp and (not check_fim_susp):
             dias_entre_receb_e_susp = data_inicio_susp - data_receb_den
             data_fim_susp = data_inicio_susp + tempo_prescricao + relativedelta(days=-1)
             data_prescricao = data_fim_susp + tempo_prescricao - dias_entre_receb_e_susp + relativedelta(days=-1)
-            print(f'O processo tramitou {dias_entre_receb_e_susp.days} dias entre o recebimento e o início da suspensão.')
-            print(f'Início da suspensão: {data_inicio_susp.strftime("%d/%m/%Y")}')
-            print(f'Data calculada para o fim da suspensão: {data_fim_susp.strftime("%d/%m/%Y")}')
-            print(f'O processo fica(ou) suspenso até {data_fim_susp.strftime("%d/%m/%Y")}.')
-            print(f'#4 - A prescrição ocorre(rá) em {data_prescricao.strftime("%d/%m/%Y")}!')
+            mensagem = f'O processo tramitou {dias_entre_receb_e_susp.days} dias entre o recebimento e o início da suspensão.\n'
+            mensagem += f'Início da suspensão: {data_inicio_susp.strftime("%d/%m/%Y")}\n'
+            mensagem += f'Data calculada para o fim da suspensão: {data_fim_susp.strftime("%d/%m/%Y")}\n'
+            mensagem += f'O processo fica(ou) suspenso até {data_fim_susp.strftime("%d/%m/%Y")}.\n'
+            mensagem += f'A prescrição ocorre(rá) em {data_prescricao.strftime("%d/%m/%Y")}!'
+            exibe_advertencia(self, mensagem)
 
         # Prescrição com início e fim da suspensão
         else:
             if data_hoje + (data_fim_susp - data_inicio_susp) >= data_hoje + tempo_prescricao:
-                print("Verifique o tempo total em que o processo permaneceu suspenso.")
+                mensagem = "Verifique o tempo total em que o processo permaneceu suspenso!"
+                exibe_critico(self, mensagem)
+
             else:
                 dias_entre_receb_e_susp = data_inicio_susp - data_receb_den
                 data_prescricao = data_fim_susp + tempo_prescricao - dias_entre_receb_e_susp + relativedelta(days=-1)
-                print(f'O processo tramitou {dias_entre_receb_e_susp.days} dias entre o recebimento e o início da suspensão.')
-                print(f'Início da suspensão: {data_inicio_susp.strftime("%d/%m/%Y")}')
-                print(f'Fim da suspensão: {data_fim_susp.strftime("%d/%m/%Y")}')
-                print(f'O processo ficou suspenso por {(data_fim_susp - data_inicio_susp).days} dias.')
-                print(f'#5 - A prescrição ocorre em {data_prescricao.strftime("%d/%m/%Y")}!')    
+                mensagem = f'O processo tramitou {dias_entre_receb_e_susp.days} dias entre o recebimento e o início da suspensão.\n'
+                mensagem += f'Início da suspensão: {data_inicio_susp.strftime("%d/%m/%Y")}\n'
+                mensagem += f'Fim da suspensão: {data_fim_susp.strftime("%d/%m/%Y")}\n'
+                mensagem += f'O processo ficou suspenso por {(data_fim_susp - data_inicio_susp).days} dias.\n'
+                mensagem += f'#5 - A prescrição ocorre em {data_prescricao.strftime("%d/%m/%Y")}!' 
+                exibe_advertencia(self, mensagem)
+    
+def exibe_advertencia(self, mensagem):
+    QMessageBox.warning(
+        self,
+        "Atenção!",
+        mensagem,
+        QMessageBox.Ok
+    )
+
+def exibe_critico(self, mensagem):
+    QMessageBox.critical(
+        self,
+        "Atenção!",
+        mensagem,
+        QMessageBox.Ok
+    )
 
 def converte_data(q_data):
     """Converte a data capturada pelo campo para o formato datetime"""
