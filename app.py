@@ -134,8 +134,8 @@ class Prescricao(QMainWindow):
             mensagem += f'Início da suspensão: {data_inicio_susp.strftime("%d/%m/%Y")}\n'
             mensagem += f'Data calculada para o fim da suspensão: {data_fim_susp.strftime("%d/%m/%Y")}\n'
             mensagem += f'O processo fica(ou) suspenso até {data_fim_susp.strftime("%d/%m/%Y")}.\n'
-            mensagem += f'A prescrição ocorre(rá) em {data_prescricao.strftime("%d/%m/%Y")}!'
-            exibe_advertencia(self, mensagem)
+            mensagem += f'A prescrição ocorre em {data_prescricao.strftime("%d/%m/%Y")}!'
+            exibe_informacao(self, mensagem)
 
         # Prescrição com início e fim da suspensão
         else:
@@ -150,13 +150,13 @@ class Prescricao(QMainWindow):
                 mensagem += f'Início da suspensão: {data_inicio_susp.strftime("%d/%m/%Y")}\n'
                 mensagem += f'Fim da suspensão: {data_fim_susp.strftime("%d/%m/%Y")}\n'
                 mensagem += f'O processo ficou suspenso por {(data_fim_susp - data_inicio_susp).days} dias.\n'
-                mensagem += f'#5 - A prescrição ocorre em {data_prescricao.strftime("%d/%m/%Y")}!' 
-                exibe_advertencia(self, mensagem)
+                mensagem += f'A prescrição ocorre em {data_prescricao.strftime("%d/%m/%Y")}!' 
+                exibe_informacao(self, mensagem)
     
 def exibe_advertencia(self, mensagem):
     QMessageBox.warning(
         self,
-        "Atenção!",
+        "Alerta!",
         mensagem,
         QMessageBox.Ok
     )
@@ -165,6 +165,14 @@ def exibe_critico(self, mensagem):
     QMessageBox.critical(
         self,
         "Atenção!",
+        mensagem,
+        QMessageBox.Ok
+    )
+
+def exibe_informacao(self, mensagem):
+    QMessageBox.information(
+        self,
+        "Informação",
         mensagem,
         QMessageBox.Ok
     )
